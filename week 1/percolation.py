@@ -18,6 +18,8 @@ class Percolation:
         self.gridsize = gridsize
         self._grid = [[0 for _ in range(gridsize)] for _ in range(gridsize)]
         self._open_sites = 0
+        self._open_top = []
+        self._open_bottom = []
         self.quickunion = quickunion.QuickUnion(gridsize ** 2)
 
     def _flatten(self, row, col):
@@ -27,6 +29,12 @@ class Percolation:
         if not self.is_open(row, col):
             self._grid[row][col] = 1
             self._open_sites += 1
+
+            if row == 0:
+                self._open_top.append((row, col))
+            elif row == self.gridsize - 1:
+                self._open_bottom.append((row, col))
+
             # if left is open, make connection
             if col > 0 and self.is_open(row, col - 1):
                 self.quickunion.union(self._flatten(row, col), self._flatten(row, col - 1))
@@ -47,8 +55,7 @@ class Percolation:
         return bool(self._grid[row][col])
 
     def is_full(self, row, col):
-        open_top = [(0, y) for y in range(self.gridsize) if self.is_open(0, y)]
-        for x, y in open_top:
+        for x, y in self._open_top:
             if self.quickunion.is_connected(self._flatten(x, y), self._flatten(row, col)):
                 return True
         return False
@@ -58,8 +65,7 @@ class Percolation:
         return self._open_sites
 
     def percolates(self):
-        open_bottom = [(self.gridsize - 1, y) for y in range(self.gridsize) if self.is_open(self.gridsize - 1, y)]
-        for x, y in open_bottom:
+        for x, y in self._open_bottom:
             if self.is_full(x, y):
                 return True
         return False

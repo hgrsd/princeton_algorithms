@@ -24,8 +24,8 @@ def main():
 
     print(f"\n[+] Starting {repeats} runs with a {size}*{size} grid.\n")
     for i in range(repeats):
-        start = perf_counter()
         perc = percolation.Percolation(size)
+        start = perf_counter()
         while not perc.percolates():
             perc.open(random.randint(0, size - 1), random.randint(0, size - 1))
         stop = perf_counter()
