@@ -1,6 +1,5 @@
 import percolation
 import sys
-import os
 import random
 from time import perf_counter
 
@@ -26,6 +25,8 @@ def main():
     for i in range(repeats):
         perc = percolation.Percolation(size)
         start = perf_counter()
+        for _ in range(int(0.535 * size ** 2)):
+            perc.open(random.randint(0, size - 1), random.randint(0, size - 1))
         while not perc.percolates():
             perc.open(random.randint(0, size - 1), random.randint(0, size - 1))
         stop = perf_counter()
@@ -37,7 +38,9 @@ def main():
 
     avg_runtime = total_runtime / repeats
     avg_fraction = total_fraction / repeats
-    print(f"\n[+] Completed.\n\n\t* avg fraction: \t{avg_fraction:.4f}\n\t* avg runtime: \t\t{avg_runtime:.2f}s\n")
+    print(f"\n[+] Completed.\n\n"
+          f"\t* avg fraction: \t{avg_fraction:.4f} ({avg_fraction * size**2}/{size**2})\n"
+          f"\t* avg runtime: \t\t{avg_runtime:.2f}s\n")
 
 
 if __name__ == "__main__":

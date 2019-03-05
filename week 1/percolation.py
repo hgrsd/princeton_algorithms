@@ -1,5 +1,6 @@
 import quickunion
 
+
 class Percolation:
     """
     This class is a Python implementation of the week 1 programming assignment of the Princeton Algorithms course
@@ -15,7 +16,7 @@ class Percolation:
     """
 
     def __init__(self, gridsize):
-        self.gridsize = gridsize
+        self._gridsize = gridsize
         self._grid = [[0 for _ in range(gridsize)] for _ in range(gridsize)]
         self._open_sites = 0
         self._open_top = []
@@ -23,7 +24,7 @@ class Percolation:
         self.quickunion = quickunion.QuickUnion(gridsize ** 2)
 
     def _flatten(self, row, col):
-        return row * self.gridsize + col
+        return row * self._gridsize + col
 
     def open(self, row, col):
         if not self.is_open(row, col):
@@ -32,20 +33,20 @@ class Percolation:
 
             if row == 0:
                 self._open_top.append((row, col))
-            elif row == self.gridsize - 1:
+            elif row == self._gridsize - 1:
                 self._open_bottom.append((row, col))
 
             # if left is open, make connection
             if col > 0 and self.is_open(row, col - 1):
                 self.quickunion.union(self._flatten(row, col), self._flatten(row, col - 1))
             # if right is open, make connection
-            if col < self.gridsize - 1 and self.is_open(row, col + 1):
+            if col < self._gridsize - 1 and self.is_open(row, col + 1):
                 self.quickunion.union(self._flatten(row, col), self._flatten(row, col + 1))
             # if up is open, make connection
             if row > 0 and self.is_open(row - 1, col):
                 self.quickunion.union(self._flatten(row, col), self._flatten(row - 1, col))
             # if down is open, make connection
-            if row < self.gridsize - 1 and self.is_open(row + 1, col):
+            if row < self._gridsize - 1 and self.is_open(row + 1, col):
                 self.quickunion.union(self._flatten(row, col), self._flatten(row + 1, col))
             return True
         else:

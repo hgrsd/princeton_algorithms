@@ -1,11 +1,8 @@
 class QuickUnion:
 
     def __init__(self, n):
-        self.id = []
-        self.sizes = []
-        for i in range(0, n):
-            self.id.append(i)
-            self.sizes.append(1)
+        self.id = list(range(n))
+        self.sizes = [1] * n
 
     def is_connected(self, a, b):
         return self._root(a) == self._root(b)
@@ -25,6 +22,7 @@ class QuickUnion:
 
     def _root(self, index):
         while index != self.id[index]:
+            self.id[index] = self.id[self.id[index]]
             index = self.id[index]
         return index
 
