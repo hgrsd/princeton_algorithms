@@ -3,7 +3,7 @@ import quickunion
 
 class Percolation:
     """
-    This class is a Python implementation of the week 1 programming assignment of the Princeton Algorithms course
+    This class is a Python implementation of the week 1 programming assignment of the Princeton "Algorithms I" course
     on Coursera. See http://coursera.cs.princeton.edu/algs4/assignments/percolation.html
 
     A 2d grid of n*n "sites" is initialised, consisting of only "closed" sites. Then, an increasing amounts of
