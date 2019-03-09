@@ -15,7 +15,6 @@ def main():
         print(f"Usage: python(3) {sys.argv[0]} <number of repeats> <grid size>")
         return False
 
-    results = []
     repeats = int(sys.argv[1])
     size = int(sys.argv[2])
     total_runtime = 0
