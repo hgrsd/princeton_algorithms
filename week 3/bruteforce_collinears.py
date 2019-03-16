@@ -1,6 +1,13 @@
 import point
 from matplotlib import pyplot as plt
 
+"""
+This is an implementation of week 3's 'brute force collinear' programming assignment of the Princeton
+Algorithms course (Part I). See http://coursera.cs.princeton.edu/algs4/assignments/collinear.html.
+
+Intead of using a sorting algorithm, like fast_collinears.py, it has three nested loops to cycle through
+all points and compare them to all other points. This means that the programme operates in O(N^3). 
+"""
 
 def find_segments(points, length):
     """ Finds and returns a list of line segments that connect four collinear points """
@@ -29,16 +36,13 @@ def plot_points(points, segments):
     plt.show()
 
 
-a = point.Point(0, 9)
-b = point.Point(0, 14)
-c = point.Point(0, 19)
-d = point.Point(12, 20)
-e = point.Point(0, 23)
-f = point.Point(-1, 0)
-g = point.Point(3, 5)
-h = point.Point(6, 10)
-i = point.Point(9, 15)
-j = point.Point(4, 15)
-points = [a, b, c, d, e, f, g, h, i, j]
+points = []
+while True:
+    print(f"Current points: ", points)
+    user_input = input("Enter x, y to add new point, empty string to find collinears for current points: ")
+    if user_input == "":
+        plot_points(points, find_segments(points, 4))
+    else:
+        x, y = user_input.split(",")
+        points.append(point.Point(int(x), int(y)))
 
-plot_points(points, find_segments(points, 4))
