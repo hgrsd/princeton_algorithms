@@ -3,6 +3,7 @@ Generic merge sort implementation.
 Use by calling sort(), passing in the sortable sequence, lo, hi and a pointer to the compare function to be used.
 """
 
+
 def sort(sortable, lo, hi, compare_function):
     if hi <= lo:
         return
