@@ -12,7 +12,7 @@ class Point:
         return f"{(self.x, self.y)}"
 
     @property
-    def coordinates(self):
+    def coordinate(self):
         return [self.x, self.y]
 
     def compare_to(self, other):
