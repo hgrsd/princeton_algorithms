@@ -1,4 +1,12 @@
 class Digraph:
+    """
+    Part II, week 1, Princeton Algorithms course on Coursera.
+    Assignment:
+    http://coursera.cs.princeton.edu/algs4/assignments/wordnet.html
+
+    A simple implementation of a directed graph, constructed from a file. The file format is described
+    on the website linked above.
+    """
 
     def __init__(self, file_in):
         self._vertices = []
@@ -17,7 +25,6 @@ class Digraph:
     def add_edge(self, v, w):
         self._vertices[v].append(w)
 
-    @property
     def adjacent(self, v):
         return self._vertices[v]
 
