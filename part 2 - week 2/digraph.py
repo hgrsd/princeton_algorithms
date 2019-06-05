@@ -7,8 +7,8 @@ class Digraph:
     """
     Part II, week 2, Princeton Algorithms course on Coursera.
 
-    An implementation of a weighted directed graph, constructed from an input file. The implementation uses
-    an array of edge lists.
+    An implementation of a weighted directed graph, constructed from an input file if file_in is given.
+    The implementation uses an array of edge lists.
 
     Supported operations:
 
@@ -34,8 +34,6 @@ class Digraph:
 
     def __init__(self, file_in=None, n_vertices=None):
         self._edges = []
-        self._n_vertices = n_vertices or 0
-        self._n_edges = 0
         if file_in:
             with open(file_in) as f:
                 self._n_vertices = int(f.readline().rstrip())
@@ -46,6 +44,11 @@ class Digraph:
                     if line.strip() != "":
                         v, w, weight = int(line.split()[0]), int(line.split()[1]), float(line.split()[2])
                         self.add_edge(v, w, weight)
+        else:
+            self._n_vertices = n_vertices
+            self._n_edges = 0
+            for _ in range(self._n_vertices):
+                    self._edges.append([])
 
     def add_edge(self, v, w, weight):
         self._edges[v].append(self.Edge(v, w, weight))
@@ -173,7 +176,7 @@ class SAP:
 
     def __init__(self, digraph):
         self.digraph = digraph
-        if not digraph.dag:
+        if not digraph.is_dag:
             raise TypeError("Digraph is not a DAG -- SAP does not work on graphs with cycles.")
 
     def length(self, v, w):
@@ -281,33 +284,40 @@ class BellFordSP:
     from a source vertex.
 
     Generally slower runtime than Dijkstra, but may be used with negative edge weights. Does not work
-    when negative cycles are present.
+    when negative cycles are present; in that case, it exposes the negative cycle found to the client.
     """
 
     def __init__(self, digraph, source):
-        self.digraph = digraph
+        self._digraph = digraph
         self.source = source
-        self._edgeto = [None] * self.digraph._n_vertices
-        self._on_queue = [False] * self.digraph._n_vertices
-        self._distto = [math.inf] * self.digraph._n_vertices
+        self._edgeto = [None] * self._digraph._n_vertices
+        self._on_queue = [False] * self._digraph._n_vertices
+        self._distto = [math.inf] * self._digraph._n_vertices
         self._queue = deque()
+        self._runs = 0
+        self._cycle = None
 
         self._distto[source] = 0
         self._on_queue[source] = True
         self._queue.append(source)
-        while self._queue:
+        while self._queue and not self._cycle:
             cur = self._queue.pop()
             self._on_queue[cur] = False
-            for edge in self.digraph.edges(cur):
+            for edge in self._digraph.edges(cur):
                 self.relax(edge)
-    
+      
     def relax(self, edge):
         if self._distto[edge.to_vertex] > self._distto[edge.from_vertex] + edge.weight:
             self._distto[edge.to_vertex] = self._distto[edge.from_vertex] + edge.weight
             self._edgeto[edge.to_vertex] = edge
             if not self._on_queue[edge.to_vertex]:
                 self._queue.appendleft(edge.to_vertex)
-                self._on_queue[edge.to_vertex] = True        
+                self._on_queue[edge.to_vertex] = True       
+        self._runs += 1
+        if self._runs % self._digraph._n_vertices == 0:
+            self._find_negative_cycle()
+            if self._cycle:
+                return
 
     def distance_to(self, vertex):
         return self._distto[vertex]
@@ -319,6 +329,40 @@ class BellFordSP:
             vertex = self._edgeto[vertex].from_vertex
         return path[::-1]
 
+    def _find_negative_cycle(self):
+        digraph = Digraph(n_vertices=self._digraph._n_vertices)
+        for edge in self._edgeto:
+            if edge:
+                digraph.add_edge(edge.from_vertex, edge.to_vertex, edge.weight)
+        visited = [False] * digraph._n_vertices
+        rec_stack = [False] * digraph._n_vertices
+        edge_to = [None] * digraph._n_vertices
+        for i in range(digraph._n_vertices):
+            if not visited[i]:
+                self._negative_cycle_recurse(digraph, i, visited, edge_to, rec_stack)
+
+    def _negative_cycle_recurse(self, digraph, s, visited, edge_to, rec_stack):
+        visited[s] = True
+        rec_stack[s] = True
+        for edge in digraph.edges(s):
+            if not visited[edge.to_vertex]:
+                edge_to[edge.to_vertex] = edge
+                self._negative_cycle_recurse(digraph, edge.to_vertex, visited, edge_to, rec_stack)
+            elif rec_stack[edge.to_vertex]:
+                self._cycle = []
+                cur = edge
+                while cur.from_vertex != edge.to_vertex:
+                    self._cycle.append(cur)
+                    cur = edge_to[cur.from_vertex]
+                self._cycle.append(cur)
+        rec_stack[s] = False
+
+    @property
+    def negative_cycle(self):
+        if self._cycle:
+            return self._cycle
+        else:
+            raise AttributeError("Graph does not contain a negative cycle.")
 
 class TopologicalSP:
     """
