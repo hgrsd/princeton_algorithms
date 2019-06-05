@@ -1,5 +1,6 @@
 import math
 import heapq
+from collections import deque
 
 
 class Digraph:
@@ -10,14 +11,13 @@ class Digraph:
     an array of edge lists.
 
     Supported operations:
+
+        - Topological order
+        - Cycle detection
         - DFS
         - BFS
-        - Topological order
-        - DAG check
         - Shortest Ancestral Path (for DAGs)
         - Dijkstra
-
-    @TODO:
         - Bellman-Ford
         - Topological Sort Algorithm
     """
@@ -51,9 +51,11 @@ class Digraph:
         self._edges[v].append(self.Edge(v, w, weight))
 
     def adjacent(self, v):
+        """ Returns v's adjacent vertices by index """
         return [edge.to_vertex for edge in self._edges[v]]
 
     def edges(self, v):
+        """ Returns all Edge objects for vertex v """
         return self._edges[v]
 
     @property
@@ -85,7 +87,7 @@ class Digraph:
     def _dag(self):
         """
         Iterates through all vertices and uses DFS, keeping track of recursion stack,
-        to detect any cycles.
+        to detect cycles.
         """
         visited = [False] * self._n_vertices
         rec_stack = [False] * self._n_vertices
@@ -111,7 +113,6 @@ class Digraph:
 class DFS:
 
     def __init__(self, digraph, source):
-
         self._seen = [False] * digraph.n_vertices
         self._edge_to = [None] * digraph.n_vertices
         self._digraph = digraph
@@ -230,6 +231,14 @@ class SAP:
 
 
 class DijkstraSP:
+    """
+    Dijkstra's algorithm to calculate shortest paths to all other vertices from a source vertex. 
+    Only works for positive edge weights. 
+
+    Instead of using a MinPQ implementation that allows for the priority of a key to be updated,
+    this implementation just adds a new (priority, key) pair to the minheap whenever the priority changes
+    and ignores obsolete entries when they are popped off the queue.
+    """
 
     def __init__(self, digraph, source):
         self.digraph = digraph
@@ -238,10 +247,11 @@ class DijkstraSP:
         self._distto = [math.inf] * self.digraph._n_vertices
         self._distto[source] = 0
         self.min_pq = []
+
         heapq.heappush(self.min_pq, (self._distto[source], source))
         while self.min_pq:
             distance, vertex = heapq.heappop(self.min_pq)
-            # Ignore obsolete entries (this avoids implementing priority-changing mechanism)
+            # Ignore obsolete entries (avoids implementing priority-changing mechanism)
             if distance > self._distto[vertex]:
                 continue
             for edge in self.digraph.edges(vertex):
@@ -253,6 +263,81 @@ class DijkstraSP:
             self._edgeto[edge.to_vertex] = edge
             heapq.heappush(self.min_pq, (self._distto[edge.to_vertex], edge.to_vertex))
 
+    def distance_to(self, vertex):
+        return self._distto[vertex]
+
+    def path_to(self, vertex):
+        path = []
+        while self._edgeto[vertex]:
+            path.append(str(self._edgeto[vertex]))
+            vertex = self._edgeto[vertex].from_vertex
+        return path[::-1]
+
+
+class BellFordSP:
+    """
+    Implementation of the Bellman-Ford algorithm to calculate distances to all other vertices
+    from a source vertex.
+
+    Generally slower runtime than Dijkstra, but may be used with negative edge weights. Does not work
+    when negative cycles are present.
+    """
+
+    def __init__(self, digraph, source):
+        self.digraph = digraph
+        self.source = source
+        self._edgeto = [None] * self.digraph._n_vertices
+        self._on_queue = [False] * self.digraph._n_vertices
+        self._distto = [math.inf] * self.digraph._n_vertices
+        self._queue = deque()
+
+        self._distto[source] = 0
+        self._on_queue[source] = True
+        self._queue.append(source)
+        while self._queue:
+            cur = self._queue.pop()
+            self._on_queue[cur] = False
+            for edge in self.digraph.edges(cur):
+                self.relax(edge)
+    
+    def relax(self, edge):
+        if self._distto[edge.to_vertex] > self._distto[edge.from_vertex] + edge.weight:
+            self._distto[edge.to_vertex] = self._distto[edge.from_vertex] + edge.weight
+            self._edgeto[edge.to_vertex] = edge
+            if not self._on_queue[edge.to_vertex]:
+                self._queue.appendleft(edge.to_vertex)
+                self._on_queue[edge.to_vertex] = True        
+
+    def distance_to(self, vertex):
+        return self._distto[vertex]
+
+    def path_to(self, vertex):
+        path = []
+        while self._edgeto[vertex]:
+            path.append(str(self._edgeto[vertex]))
+            vertex = self._edgeto[vertex].from_vertex
+        return path[::-1]
+
+
+class TopologicalSP:
+    """
+    Topological Order algorithm to calculate shortest paths to all other vertices from source vertex.
+    Fast, but only to be used for DAGs.
+    """
+
+    def __init__(self, digraph, source):
+        self._edgeto = [None] * digraph._n_vertices
+        self._distto = [math.inf] * digraph._n_vertices
+        self._distto[source] = 0
+        for vertex in digraph.topological:
+            for edge in digraph.edges(vertex):
+                self.relax(edge)
+
+    def relax(self, edge):
+        if self._distto[edge.to_vertex] > self._distto[edge.from_vertex] + edge.weight:
+            self._distto[edge.to_vertex] = self._distto[edge.from_vertex] + edge.weight
+            self._edgeto[edge.to_vertex] = edge
+    
     def distance_to(self, vertex):
         return self._distto[vertex]
 
