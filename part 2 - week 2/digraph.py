@@ -32,20 +32,20 @@ class Digraph:
         def __str__(self):
             return f"{self.from_vertex}->{self.to_vertex} ({self.weight})"
 
-    def __init__(self, file_in):
+    def __init__(self, file_in=None, n_vertices=None):
         self._edges = []
-        self._n_vertices = 0
+        self._n_vertices = n_vertices or 0
         self._n_edges = 0
-        with open(file_in) as f:
-            self._n_vertices = int(f.readline().rstrip())
-            self._n_edges = int(f.readline().rstrip())
-            for _ in range(self._n_vertices):
-                self._edges.append([])
-            for line in f:
-                if line.strip() != "":
-                    v, w, weight = int(line.split()[0]), int(line.split()[1]), float(line.split()[2])
-                    self.add_edge(v, w, weight)
-        self.is_dag = self._dag()
+        if file_in:
+            with open(file_in) as f:
+                self._n_vertices = int(f.readline().rstrip())
+                self._n_edges = int(f.readline().rstrip())
+                for _ in range(self._n_vertices):
+                    self._edges.append([])
+                for line in f:
+                    if line.strip() != "":
+                        v, w, weight = int(line.split()[0]), int(line.split()[1]), float(line.split()[2])
+                        self.add_edge(v, w, weight)
 
     def add_edge(self, v, w, weight):
         self._edges[v].append(self.Edge(v, w, weight))
@@ -83,8 +83,9 @@ class Digraph:
             if not visited[vertex]:
                 self._topo_recurse(vertex, visited, topo_stack)
         topo_stack.append(s)
-
-    def _dag(self):
+    
+    @property
+    def is_dag(self):
         """
         Iterates through all vertices and uses DFS, keeping track of recursion stack,
         to detect cycles.
