@@ -6,7 +6,7 @@ class Graph:
     Implements an undirected weighted graph. Part II, week 2, Princeton Algorithms course on Coursera.
     Operations:
         - Kruskal (MST)
-        - @TODO: Prim (MST)
+        - Prim (MST)
     """
 
     class Edge:
@@ -89,3 +89,31 @@ class Graph:
                 mst.append(cur)
                 uf.union(v, w)
         return mst
+
+    def prim(self):
+        mst = []
+        queue = []
+        seen = [False] * self.n_vertices
+        seen[0] = True
+        for edge in self.edges(0):
+            heapq.heappush(queue, edge)
+        while queue and len(mst) < self.n_vertices - 1:
+            cur = heapq.heappop(queue)
+            v = cur.either()
+            w = cur.other(v)
+            if not (seen[v] and seen[w]):
+                mst.append(cur)
+                if not seen[v]:
+                    for edge in self.edges(v):
+                        if not seen[edge.other(v)]:
+                            heapq.heappush(queue, edge)
+                    seen[v] = True
+                else:
+                    for edge in self.edges(w):
+                        if not seen[edge.other(w)]:
+                            heapq.heappush(queue, edge)
+                    seen[w] = True
+        return mst
+
+
+
